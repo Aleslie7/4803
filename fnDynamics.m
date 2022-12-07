@@ -44,7 +44,7 @@ B = [0 0 0 0; % x_dot
     kt/Izz -kt/Izz -kt/Izz kt/Izz]; % r_dot
 
 % adding rotation matrix stuff in
-Fa = A * x;
+Fa = A * x + [0; 0; 0; 0; 0; -9.81; 0; 0; 0; 0; 0; 0];
 G = B * u + [0; 0; 0; temp(1); temp(2); temp(3); 0; 0; 0; 0; 0; 0];
 F = Fa + G;
 
