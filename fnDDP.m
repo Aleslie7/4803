@@ -1,5 +1,5 @@
 function [u, cost] = fnDDP(x,num_iter, dt, Q_f, R, p_target, gamma,...
-    ~, x_dim, u_dim, u_init, dynamics)
+    ~,x_dim, u_dim, u_init, dynamics)
 global Horizon;
 
 xo = x;

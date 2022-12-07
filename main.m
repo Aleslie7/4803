@@ -34,20 +34,21 @@ dynamics;
 % Solver parameters.
 Horizon = 150; % Time Horizon.
 num_iter = 100; % Number of Iterations
-dt = 0.02; % Discretization.
+dt = 0.01; % Discretization.
 
 % Weight in Final State:
-Q_f = zeros(3,3);
+
+Q_f = zeros(12,12);
 Q_f(1,1) = 100;  %x
 Q_f(2,2) = 500; %x'
 Q_f(3,3) = 1000; %theta
 
 % Weight in the Control:
-R = 1 * eye(2,2);
+R = 0.001 * eye(4,4);
 
 % Initialize solution.
 % State represented as [x, x_dot, theta, theta_dot].
-xo = [-1.5; 2; 0];
+xo = [-3;-2;-1;0;0;0;0;0;0;0;0;0];
 x_dim = length(xo);
 x_traj = zeros(x_dim,Horizon); % Initial trajectory.
 
