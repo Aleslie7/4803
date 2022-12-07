@@ -26,5 +26,5 @@ for k = 1:steps
     u3 = u_new(3,k);
     u4 = u_new(4,k);
 
-    x(:,k+1) = x(:,k) + (dynamics.F(u1, u2, u3, u4, x4, x5, x6, x7, x8, x10, x11, x12) + [0; 0; 0; 0; 0; -9.81; 0; 0; 0; 0; 0; 0])* dt; % adds gravity after as static value
+    x(:,k+1) = x(:,k) + (dynamics.F(u1, u2, u3, u4, x4, x5, x6, x7, x8, x10, x11, x12))* dt;
 end
