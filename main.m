@@ -149,12 +149,9 @@ for i=1:(Horizon-1)
         du = l_k(:,i) + L_k(:,:,i) * dx;
         dx = A(:,:,i) * dx + B(:,:,i) * du;  
         u_new(:,i) = u_k(:,i) + gamma * du;
-        if u_new(:,i) > 5
-            u_new(:,i) = 5;
-        end
-        if u_new(:,i) < -5
-            u_new(:,i) = -5;
-        end
+        
+        % prevent control from going negative
+        u_new(:,i) = max(u_new(:,i), [0;0;0;0]);
     end
 
     u_k = u_new;
