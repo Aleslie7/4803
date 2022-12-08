@@ -70,9 +70,9 @@ x_traj = zeros(x_dim,Horizon);
 
 % Initial Control:
 %u_k = zeros(2,Horizon-1);
-u_k = zeros(1,Horizon-1);
+u_k = zeros(4,Horizon-1);
 u_dim = size(u_k, 1);
-du_k = zeros(1,Horizon-1);
+du_k = zeros(4,Horizon-1);
 %du_k = zeros(u_dim,Horizon-1);
 
 %Cost = zeros(3, num_iter); % Cost history.
