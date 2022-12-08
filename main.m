@@ -53,9 +53,9 @@ x_traj = zeros(x_dim,Horizon);
 
 % Initial Control:
 %u_k = zeros(2,Horizon-1);
-u_k = zeros(1,Horizon-1);
+u_k = zeros(4,Horizon-1);
 u_dim = size(u_k, 1);
-du_k = zeros(1,Horizon-1);
+du_k = zeros(4,Horizon-1);
 %du_k = zeros(u_dim,Horizon-1);
 
 %Cost = zeros(3, num_iter); % Cost history.
@@ -81,7 +81,7 @@ dynamics = fnDynamics();
 
 for k = 1:num_iter
     % Preallocate cost memory.
-    q0 = zeros(Horizon-1);
+    q0 = zeros(Horizon-1); % (1,)
     q_k = zeros(x_dim, Horizon-1);
     Q_k = zeros(x_dim, x_dim, Horizon-1);
     r_k = zeros(u_dim, Horizon-1);
@@ -186,7 +186,7 @@ for i= 2:Horizon
     time(i) =time(i-1) + dt;  
 end
 
-if ~visualizing_bundles
-    visualize;
-%     close(fh);
-end
+% if ~visualizing_bundles
+%     visualize;
+% %     close(fh);
+% end
