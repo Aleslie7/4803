@@ -7,10 +7,6 @@ global p_target
 global dt;
 
 % Environment parameters.
-
-
-% Obtain expressions for F, Fx, Fu.
-dynamics_nominal = fnDynamics();
 Q=eye(12,12);
 Q(1,1)=1; %X
 Q(2,2)=1; %Y
@@ -25,8 +21,11 @@ Q(10,10)=50; %P
 Q(11,11)=50; %q
 Q(12,12)=50; %r
 
+% Obtain expressions for F, Fx, Fu.
+dynamics_nominal = fnDynamics();
+
 % Environment parameters with measurement error.
-dynamics_sigma = 0.2;
+dynamics_sigma = 0;
 
 
 %dynamics_actual = fnDynamics(mc_noisy, mp_noisy, l_noisy, g_noisy);
@@ -38,33 +37,33 @@ num_iter = 10; % Number of Iterations
 dt = 0.01;     % Discretization.
 
 % Costs.
-Q_f = zeros(3,3); % State cost. 4x4 since state is 4-dimensional.
-Q_f(1,1) = 100;     % X position cost.
-Q_f(2,2) = 100;   % X velocity cost.
-Q_f(3,3) = 150;  % Pole angle cost.
+Q_f = 10*eye(12,12);
+Q_f(1,1)=100;
+Q_f(2,2)=100;
+Q_f(3,3)=150;
 
 
 if ~(all(eig(Q_f) >= 0))
     error('Cost matrix Q_f not positive semi-definite.')
 end
 
-R = 1* eye(2,2); % Control cost. 1x1 since control is 1-dimensional.
+R = diag([0.001 0.001 0.001 0.001]);
 
 % Initialize solution.
-% State represented as [x, x_dot, theta, theta_dot].
-xo = [-1.5;2;0];
 
-
-
+% Initial configuration:
+xo = [-3; -3; -1; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 x_dim = length(xo);
-u_k = zeros(4, Horizon-1) + 1.2263
-u_dim = size(u_k,1);
-du_k = zeros(4,Horizon - 1)
-x_traj = zeros(x_dim, Horizon)
-% Goal state:
 
-p_target = zeros(12,1)
+% Initial Trajectory:
+x_traj = zeros(x_dim,Horizon);
 
+% Initial Control:
+u_k = zeros(4,Horizon-1) + 1.2263;
+u_dim = size(u_k, 1);
+du_k = zeros(4,Horizon-1);
+
+% Target:
 p_target(1,1) = 5;
 p_target(2,1) = 3;
 p_target(3,1) = 2;
@@ -77,27 +76,25 @@ p_target(9,1) = 0;
 p_target(10,1) = 0;
 p_target(11,1) = 0;
 p_target(12,1) = 0;
-
-
 % Add noise.
 sigma_nominal = 0.0;
 sigma_real = 0.0;
 
 % Learning Rate
-gamma = 0.5;
+gamma = 0.3;
 
 % Run the MPC.
 x = xo;
 residuals = []; % Residual history.
 Cost = [];      % Cost history.
-% x_traj = [];    % Initial trajectory
+x_traj = [];    % Initial trajectory
 u_init = zeros(u_dim, Horizon-1);
 
 i = 1;
-max_num_iters = 150;
+max_num_iters = 30;
 while 1
     [u_k, cost] = fnDDP(x,num_iter, dt, Q_f, R, p_target, gamma,...
-      0, x_dim, u_dim, u_init, dynamics_nominal);
+      0, x_dim, u_dim, u_init, dynamics_nominal,Q);
     u_init = u_k;
     Cost = [Cost cost];
     [x_new] = fnSimulate(x,u_k,Horizon,dt,sigma_real, dynamics_actual, 2);
@@ -122,5 +119,3 @@ time = zeros(1, Horizon);
 for i= 2:(Horizon - 1)
     time(i) =time(i-1) + dt;
 end
-
-visualize
