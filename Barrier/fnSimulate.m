@@ -8,7 +8,7 @@ end
 
 x = xo;
 
-for k = 1:steps    
+for k = 1:steps
     x1 = x(1,k);
     x2 = x(2,k);
     x3 = x(3,k);
@@ -27,7 +27,7 @@ for k = 1:steps
     u3 = u_new(3,k);
     u4 = u_new(4,k);
 
-    % barrier states for beta_k
+        % barrier states for beta_k
     h1 = (x1 - 2.2)^2 + (x2 - 2.2)^2 + (x3 - 1)^2 - 1;
     h2 = (x1)^2 + (x2 - 0.2)^2 + (x3)^2 - 1;
     h3 = (x1 - 3)^2 + (x2)^2 + (x3 - 0.5)^2 - 1;
@@ -56,4 +56,6 @@ for k = 1:steps
     gamma = 0.5; % usually 0.3-0.7
     wk1 = bk1 - bd - gamma * (wk + bd - bk); % w_k+1, gamma term will 0 out since we have no noise
     x(13,k+1) = wk1;
+
+
 end

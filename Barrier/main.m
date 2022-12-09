@@ -1,11 +1,3 @@
-visualizing_bundles_exists = exist('visualizing_bundles', 'var');
-visualizing_bundles = visualizing_bundles_exists && visualizing_bundles;
-
-if ~visualizing_bundles
-    close all;
-    visualizing_bundles=false;
-end
-
 global Horizon;
 global time;
 global p_target
@@ -22,19 +14,19 @@ dt = 0.01;
 
 % Weight running:
 Q=eye(13,13);
-Q(1,1)=.1; %X
-Q(2,2)=.1; %Y
+Q(1,1)=1; %X
+Q(2,2)=1; %Y
 Q(3,3)=120; %Z
-Q(4,4)=.1; %Xdot
-Q(5,5)=.1; %Ydot
-Q(6,6)=.1; %Zdot
+Q(4,4)=.3; %Xdot
+Q(5,5)=.3; %Ydot
+Q(6,6)=20; %Zdot
 Q(7,7)=1; %Phi
 Q(8,8)=1; %Theta
 Q(9,9)=1; %Psy
-Q(10,10)=70; %P
-Q(11,11)=70; %q
-Q(12,12)=70; %r
-Q(13,13)=10; %barrier
+Q(10,10)=50; %P
+Q(11,11)=50; %q
+Q(12,12)=50; %r
+Q(13,13)=10; % barrier
 
 % Weight in Final State:
 Q_f = 10*eye(13,13);
@@ -69,25 +61,9 @@ x_dim = length(xo);
 x_traj = zeros(x_dim,Horizon);
 
 % Initial Control:
-%u_k = zeros(2,Horizon-1);
-u_k = zeros(4,Horizon-1);
+u_k = zeros(4,Horizon-1) + 1.2263;
 u_dim = size(u_k, 1);
 du_k = zeros(4,Horizon-1);
-%du_k = zeros(u_dim,Horizon-1);
-
-%Cost = zeros(3, num_iter); % Cost history.
-%residuals = zeros(3, num_iter); % Residual history.
-
-% Final barrier state finding:
-% Initial barrier state finding:
-% barrier states for beta_k
-h1 = (5 - 2.2)^2 + (3 - 2.2)^2 + (2 - 1)^2 - 1;
-h2 = (5)^2 + (3 - 0.2)^2 + (2)^2 - 1;
-h3 = (5 - 3)^2 + (3)^2 + (2 - 0.5)^2 - 1;
-bk = 1/h1 + 1/h2 + 1/h3;
-
-wk = bk - bd; % w_k
-
 
 % Target:
 p_target(1,1) = 5;
@@ -102,17 +78,17 @@ p_target(9,1) = 0;
 p_target(10,1) = 0;
 p_target(11,1) = 0;
 p_target(12,1) = 0;
-p_target(12,1) = wk;
+p_target(13,1) = 0;
 
 % Learning Rate
-gamma = 0.5;
+gamma = 0.3;
 dynamics = fnDynamics();
 
 for k = 1:num_iter
 %------------------------------------------------> Linearization of the dynamics
 %------------------------------------------------> Quadratic Approximations of the cost function 
     for  j = 1:(Horizon-1)    
-        [l0,l_x,l_xx,l_u,l_uu,l_ux] = fnCost(x_traj(:,j), u_k(:,j), j,R,dt);
+        [l0,l_x,l_xx,l_u,l_uu,l_ux] = fnCost(x_traj(:,j), u_k(:,j), j,R,dt, Q, p_target);
         q0(j) = dt * l0; % L.
         q_k(:,j) = dt * l_x; % Lx.
         Q_k(:,:,j) = dt * l_xx; % Lxx.
@@ -122,7 +98,15 @@ for k = 1:num_iter
 
         [dfx,dfu] = fnState_And_Control_Transition_Matrices(x_traj(:,j),u_k(:,j),du_k(:,j),dt, dynamics);
 
-        A(:,:,j) = eye(x_dim,x_dim) + dfx * dt;
+        A(:,:,j) = eye(x_dim,x_dim) + dfx * dt
+%         % barrier states for beta_k
+%         h1 = (x1 - 2.2)^2 + (x2 - 2.2)^2 + (x3 - 1)^2 - 1;
+%         h2 = (x1)^2 + (x2 - 0.2)^2 + (x3)^2 - 1;
+%         h3 = (x1 - 3)^2 + (x2)^2 + (x3 - 0.5)^2 - 1;
+%         bk = 1/h1 + 1/h2 + 1/h3;
+%         wk = bk - bd; % w_k
+%         A(13,13,j) = wk;
+
         B(:,:,j) = dfu * dt;  
     end
  
@@ -166,8 +150,8 @@ for i=1:(Horizon-1)
 
 
 %-------------------------------> Simulation of the Nonlinear System
-    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,0, dynamics); %change above variables for new dynamics to test controller
-    Cost(:,k) = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R);
+    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,0, dynamics);
+    Cost(:,k) = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R, Q);
     
     if (k ~= 1)
         residuals(:, k) = abs(Cost(:, k - 1) - Cost(:, k));
@@ -181,14 +165,10 @@ for i=1:(Horizon-1)
 end
 
 residuals(:,1) = residuals(:,2);
+x_traj(:,end) - p_target
 
 time = zeros(1,Horizon);
 time(1)=0;
 for i= 2:Horizon
     time(i) =time(i-1) + dt;  
-end
-
-if ~visualizing_bundles
-    visualize;
-%     close(fh);
 end
