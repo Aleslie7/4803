@@ -8,7 +8,7 @@ end
 
 x = xo;
 
-for k = 1:steps    
+for k = 1:steps
     x1 = x(1,k);
     x2 = x(2,k);
     x3 = x(3,k);
@@ -26,5 +26,7 @@ for k = 1:steps
     u3 = u_new(3,k);
     u4 = u_new(4,k);
 
-    x(:,k+1) = x(:,k) + (dynamics.F(u1, u2, u3, u4, x4, x5, x6, x7, x8, x10, x11, x12))* dt;
+    temp = dynamics.F(u1, u2, u3, u4, x4, x5, x6, x7, x8, x10, x11, x12);
+    x(1:12,k+1) = x(1:12,k) + (temp(1:12))* dt; % 1:12 to exclude stepping of w_k
+
 end

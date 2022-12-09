@@ -1,5 +1,5 @@
 function [u, cost] = fnDDP(x,num_iter, dt, Q_f, R, p_target, gamma,...
-    ~,x_dim, u_dim, u_init, dynamics)
+    ~, x_dim, u_dim, u_init, dynamics,Q)
 global Horizon;
 
 xo = x;
@@ -23,7 +23,7 @@ for k = 1:num_iter
     B = zeros(x_dim, u_dim, Horizon-1);
     for  j = 1:(Horizon-1)    
         [l0,l_x,l_xx,l_u,l_uu,l_ux] = fnCost(x_traj(:,j), u_k(:,j),...
-            j,R,dt);
+            j,R,dt,Q,p_target);
         q0(j) = dt * l0;        % L.
         q_k(:,j) = dt * l_x;    % Lx.
         Q_k(:,:,j) = dt * l_xx; % Lxx.
@@ -69,8 +69,8 @@ for k = 1:num_iter
     end
 
     u_k = u_new;
-    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,sigma, dynamics);
+    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,0, dynamics);
 end
-cost = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R);
+cost = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R,Q);
 u = u_k;
 end

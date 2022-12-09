@@ -9,8 +9,8 @@ global dt;
 % Environment parameters.
 Q=eye(12,12);
 Q(1,1)= 0.6; %X
-Q(2,2)= .92; %Y
-Q(3,3)= 18; %Z
+Q(2,2)= 1; %Y
+Q(3,3)= 5; %Z
 Q(4,4)=.3; %Xdot
 Q(5,5)=.3; %Ydot
 Q(6,6)=20; %Zdot

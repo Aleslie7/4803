@@ -27,7 +27,7 @@ A = [0 0 0 1 0 0 0 0 0 0 0 0; % x_dot
     0 0 0 0 0 0 0 0 0 0 cos(x7) -sin(x7); % theta_dot
     0 0 0 0 0 0 0 0 0 0 sin(x7)/cos(x8) cos(x7)/cos(x8); % psi_dot
     0 0 0 0 0 0 0 0 0 0 0 -(Izz - Iyy)*x11/Ixx; % p_dot
-    0 0 0 0 0 0 0 0 0 0 0 -(Izz - Ixx)*x10/Iyy; % q_dot
+    0 0 0 0 0 0 0 0 0 0 0 (Izz - Ixx)*x10/Iyy; % q_dot
     0 0 0 0 0 0 0 0 0 0 0 0]; % r_dot
 
 B = [0 0 0 0; % x_dot
@@ -44,14 +44,15 @@ B = [0 0 0 0; % x_dot
     kt/Izz -kt/Izz -kt/Izz kt/Izz]; % r_dot
 
 % adding rotation matrix stuff in
-Fa = A * x + [0; 0; 0; 0; 0; -9.81; 0; 0; 0; 0; 0; 0];
+Fa = A * x(1:12) + [0; 0; 0; 0; 0; -9.81; 0; 0; 0; 0; 0; 0];
 G = B * u + [0; 0; 0; temp(1); temp(2); temp(3); 0; 0; 0; 0; 0; 0];
 F = Fa + G;
+
 
 % creating symbolic stuff for ease of interaction later
 dynamics = struct();
 dynamics.F = matlabFunction(F);
 dynamics.Fx = matlabFunction(jacobian(F, x));
 dynamics.Fu = matlabFunction(jacobian(F, u));
-dynamics.Fb = matlabFunction(G);
+dynamics.Fb =  matlabFunction(G);
 end
