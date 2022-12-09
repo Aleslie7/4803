@@ -11,16 +11,12 @@ global time;
 global p_target
 global Q_f;
 global dt;
+global mus;
+global sigmas;
 
-% Horizon 
-Horizon = 800; % 1.5sec
-% Number of Iterations
-num_iter = 100;
 
-% Discretization
-dt = 0.01;
+use_obstacles = false;
 
-% <<<<<<< HEAD
 
 if use_obstacles
     mus = [0]; % Obstacle position.
@@ -38,85 +34,45 @@ dynamics;
 % Solver parameters.
 Horizon = 150; % Time Horizon.
 num_iter = 100; % Number of Iterations
-dt = 0.01; % Discretization.
+dt = 0.02; % Discretization.
 
 % Weight in Final State:
-
-Q_f = zeros(12,12);
+Q_f = zeros(3,3);
 Q_f(1,1) = 100;  %x
 Q_f(2,2) = 500; %x'
 Q_f(3,3) = 1000; %theta
 
 % Weight in the Control:
-R = 0.001 * eye(4,4);
+R = 1 * eye(2,2);
 
 % Initialize solution.
 % State represented as [x, x_dot, theta, theta_dot].
-xo = [-3;-2;-1;0;0;0;0;0;0;0;0;0];
-% =======
-% Weight running:
-Q=eye(12,12);
-Q(1,1)=.1; %X
-Q(2,2)=.1; %Y
-Q(3,3)=120; %Z
-Q(4,4)=.1; %Xdot
-Q(5,5)=.1; %Ydot
-Q(6,6)=.1; %Zdot
-Q(7,7)=1; %Phi
-Q(8,8)=1; %Theta
-Q(9,9)=1; %Psy
-Q(10,10)=70; %P
-Q(11,11)=70; %q
-Q(12,12)=70; %r
-
-% Weight in Final State:
-Q_f = 10*eye(12,12);
-Q_f(1,1)=100;
-Q_f(2,2)=100;
-Q_f(3,3)=150;
-
-% Weight in the Control:
-R = diag([0.001 0.001 0.001 0.001]);
-
-% Initial configuration:
-xo = [-3; -3; -1; 0; 0; 0; 0; 0; 0; 0; 0; 0];
-% >>>>>>> 8ec7743e95fe39321567ab4ab494b1baf34a08da
+xo = [-1.5; 2; 0];
 x_dim = length(xo);
+x_traj = zeros(x_dim,Horizon); % Initial trajectory.
 
-% Initial Trajectory:
-x_traj = zeros(x_dim,Horizon);
-
-% Initial Control:
-%u_k = zeros(2,Horizon-1);
-u_k = zeros(4,Horizon-1);
+u_k = zeros(2,Horizon-1); % Initial control.
 u_dim = size(u_k, 1);
-du_k = zeros(4,Horizon-1);
-%du_k = zeros(u_dim,Horizon-1);
+du_k = zeros(u_dim,Horizon-1); % Initial control variation.
 
-%Cost = zeros(3, num_iter); % Cost history.
-%residuals = zeros(3, num_iter); % Residual history.
+Cost = zeros(3, num_iter); % Cost history.
+residuals = zeros(3, num_iter); % Residual history.
 
-% Target:
-p_target(1,1) = 5;
-p_target(2,1) = 3;
-p_target(3,1) = 2;
-p_target(4,1) = 0;
-p_target(5,1) = 0;
-p_target(6,1) = 0;
-p_target(7,1) = 0;
-p_target(8,1) = 0;
-p_target(9,1) = 0;
-p_target(10,1) = 0;
-p_target(11,1) = 0;
-p_target(12,1) = 0;
+% Goal state:
+p_target = zeros(x_dim, 1);
+p_target(1,1) = 2.5;
+p_target(2,1) = -1.5; % Target x_dot.
+p_target(3,1) = pi./2; % Target theta.
+
+% Add noise.
+sigma = 0.0;
 
 % Learning Rate
-gamma = 0.5;
-dynamics = fnDynamics();
+gamma = 0.2;
 
 for k = 1:num_iter
     % Preallocate cost memory.
-    q0 = zeros(Horizon-1); % (1,)
+    q0 = zeros(Horizon-1);
     q_k = zeros(x_dim, Horizon-1);
     Q_k = zeros(x_dim, x_dim, Horizon-1);
     r_k = zeros(u_dim, Horizon-1);
@@ -160,8 +116,8 @@ for k = 1:num_iter
         % Qu = Lu + B^T * Vx
         g_ = r_k(:,j) +  B(:,:,j)' * Vx(:,j+1);
 
-        thing = eye(length(H));
-        inv_H = H \ thing; % Quu^-1
+
+        inv_H = inv(H); % Quu^-1
         L_k(:,:,j)= - inv_H * G; % Feedback term = -Quu^-1 * Qux.
         l_k (:,j) = - inv_H *g_; % Feedforward term = -Quu^-1 * Qu.
 
@@ -184,9 +140,12 @@ for i=1:(Horizon-1)
         du = l_k(:,i) + L_k(:,:,i) * dx;
         dx = A(:,:,i) * dx + B(:,:,i) * du;  
         u_new(:,i) = u_k(:,i) + gamma * du;
-        
-        % prevent control from going negative
-        u_new(:,i) = max(u_new(:,i), [0;0;0;0]);
+        if u_new(:,i) > 5
+            u_new(:,i) = 5;
+        end
+        if u_new(:,i) < -5
+            u_new(:,i) = -5;
+        end
     end
 
     u_k = u_new;
@@ -194,7 +153,7 @@ for i=1:(Horizon-1)
 
 
 
-    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,0, dynamics); %change above variables for new dynamics to test controller
+    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,sigma, dynamics); %change above variables for new dynamics to test controller
     Cost(:,k) = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R);
     %     x_trag 3x150
     %     u_k 2x149
@@ -221,7 +180,7 @@ for i= 2:Horizon
     time(i) =time(i-1) + dt;  
 end
 
-% if ~visualizing_bundles
-%     visualize;
-% %     close(fh);
-% end
+if ~visualizing_bundles
+    visualize;
+%     close(fh);
+end

@@ -11,11 +11,18 @@ x9 = x(9,1);
 x10 = x(10,1);
 x11 = x(11,1);
 x12 = x(12,1);
-u1 = u_new(1,1);
-u2 = u_new(2,1);
-u3 = u_new(3,1);
-u4 = u_new(4,1);
 
-A = dynamics.Fx(u1, u2, u3, u4, x7, x8, x10, x11, x12);
-B = dynamics.Fu(x7, x8);
+u1 = u(1,1);
+u2 = u(2,1);
+u3 = u(3,1);
+u4 = u(4,1);
+
+A = zeros(12,12);
+B = zeros(12,4);
+
+% Needs to be updated
+A(1,3) = -u1.*sin(x3);
+A(2,3) = u1.*cos(x3);
+B(1,1) = cos(x3);
+B(2,1) = sin(x3);
 end

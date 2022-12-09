@@ -4,12 +4,13 @@ function [Cost] =  fnCostComputation(x_traj,u_new,p_target,dt,Q_f,R)
 
     for j =1:(Horizon-1)
 
-        Cost = (Cost + 0.5 * u_new(:,j)' * R * u_new(:,j) * dt) ;
+        Cost = Cost + 0.5 * u_new(:,j)' * R * u_new(:,j) * dt;
 
     end
 
-    TerminalCost= (x_traj(:,Horizon) - p_target') * Q_f * (x_traj(:,Horizon) - p_target)  ; 
+    TerminalCost= (x_traj(:,Horizon) - p_target')*Q_f * (x_traj(:,Horizon) - p_target); 
     % the final cost function because of backward propagation we add it at
     % the end 
 
     Cost = Cost + TerminalCost;
+   

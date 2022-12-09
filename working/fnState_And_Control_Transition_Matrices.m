@@ -1,4 +1,4 @@
-function [A,B] = fnState_And_Control_Transition_Matrices(x,u,du,dt, dynamics)
+function [A,B] = fnState_And_Control_Transition_Matrices(x,u_new,du,dt, dynamics)
 x1 = x(1,1);
 x2 = x(2,1);
 x3 = x(3,1);

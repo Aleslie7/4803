@@ -20,45 +20,11 @@ num_iter = 100;
 % Discretization
 dt = 0.01;
 
-% <<<<<<< HEAD
-
-if use_obstacles
-    mus = [0]; % Obstacle position.
-    sigmas = [0]; % Obstacle weight.
-else
-    mus = [];
-    sigmas = [];
-end
-
-
-% Obtain expressions for F, Fx, Fu, & Fb.
-dynamics = fnDynamics();
-dynamics;
-
-% Solver parameters.
-Horizon = 150; % Time Horizon.
-num_iter = 100; % Number of Iterations
-dt = 0.01; % Discretization.
-
-% Weight in Final State:
-
-Q_f = zeros(12,12);
-Q_f(1,1) = 100;  %x
-Q_f(2,2) = 500; %x'
-Q_f(3,3) = 1000; %theta
-
-% Weight in the Control:
-R = 0.001 * eye(4,4);
-
-% Initialize solution.
-% State represented as [x, x_dot, theta, theta_dot].
-xo = [-3;-2;-1;0;0;0;0;0;0;0;0;0];
-% =======
 % Weight running:
 Q=eye(12,12);
 Q(1,1)=.1; %X
 Q(2,2)=.1; %Y
-Q(3,3)=120; %Z
+Q(3,3)=.120; %Z
 Q(4,4)=.1; %Xdot
 Q(5,5)=.1; %Ydot
 Q(6,6)=.1; %Zdot
@@ -76,11 +42,10 @@ Q_f(2,2)=100;
 Q_f(3,3)=150;
 
 % Weight in the Control:
-R = diag([0.001 0.001 0.001 0.001]);
+R = diag([0.001 0.001 0.001 10.001]);
 
 % Initial configuration:
 xo = [-3; -3; -1; 0; 0; 0; 0; 0; 0; 0; 0; 0];
-% >>>>>>> 8ec7743e95fe39321567ab4ab494b1baf34a08da
 x_dim = length(xo);
 
 % Initial Trajectory:
@@ -88,7 +53,8 @@ x_traj = zeros(x_dim,Horizon);
 
 % Initial Control:
 %u_k = zeros(2,Horizon-1);
-u_k = zeros(4,Horizon-1);
+u_k = zeros(4,Horizon-1) + 0.02;
+u_k = u_k + 0.02
 u_dim = size(u_k, 1);
 du_k = zeros(4,Horizon-1);
 %du_k = zeros(u_dim,Horizon-1);
@@ -111,7 +77,7 @@ p_target(11,1) = 0;
 p_target(12,1) = 0;
 
 % Learning Rate
-gamma = 0.5;
+gamma = 0.3;
 dynamics = fnDynamics();
 
 for k = 1:num_iter
@@ -193,7 +159,7 @@ for i=1:(Horizon-1)
 
 
 
-
+    Cost = []
     [x_traj] = fnSimulate(xo,u_new,Horizon,dt,0, dynamics); %change above variables for new dynamics to test controller
     Cost(:,k) = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R);
     %     x_trag 3x150
