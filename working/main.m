@@ -124,7 +124,7 @@ for i=1:(Horizon-1)
 
 
 %-------------------------------> Simulation of the Nonlinear System
-    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,0, dynamics); %change above variables for new dynamics to test controller
+    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,0, dynamics);
     Cost(:,k) = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R, Q);
     
     if (k ~= 1)
