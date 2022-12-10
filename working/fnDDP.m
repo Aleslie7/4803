@@ -24,12 +24,12 @@ for k = 1:num_iter
     for  j = 1:(Horizon-1)    
         [l0,l_x,l_xx,l_u,l_uu,l_ux] = fnCost(x_traj(:,j), u_k(:,j),...
             j,R,dt,Q,p_target);
-        q0(j) = dt * l0;        % L.
-        q_k(:,j) = dt * l_x;    % Lx.
-        Q_k(:,:,j) = dt * l_xx; % Lxx.
-        r_k(:,j) = dt * l_u;    % Lu.
-        R_k(:,:,j) = dt * l_uu; % Luu.
-        P_k(:,:,j) = dt * l_ux; % Lux.
+        q0(j) = dt * l0;        
+        q_k(:,j) = dt * l_x;    
+        Q_k(:,:,j) = dt * l_xx; 
+        r_k(:,j) = dt * l_u;    
+        R_k(:,:,j) = dt * l_uu; 
+        P_k(:,:,j) = dt * l_ux; 
         [fx,fu] = fnState_And_Control_Transition_Matrices(x_traj(:,j),...
             u_k(:,j),du_k(:,j),dt, dynamics);
         A(:,:,j) = eye(x_dim,x_dim) + fx * dt;
