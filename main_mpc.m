@@ -22,13 +22,9 @@ Q(11,11)=50; %q
 Q(12,12)=50; %r
 
 % Obtain expressions for F, Fx, Fu.
-dynamics_nominal = fnDynamics();
+dynamics = fnDynamics();
 
-% Environment parameters with measurement error.
-dynamics_sigma = 0;
-
-
-dynamics_actual = fnDynamics();
+dynamics = fnDynamics();
 
 % Solver parameters.
 Horizon = 75;  % Time Horizon.
@@ -85,10 +81,10 @@ i = 1;
 max_num_iters = 150;
 while 1
     [u_k, cost] = fnDDP(x,num_iter, dt, Q_f, R, p_target, gamma,...
-      0, x_dim, u_dim, u_init, dynamics_nominal,Q);
+      0, x_dim, u_dim, u_init, dynamics,Q);
     u_init = u_k;
     Cost = [Cost cost];
-    [x_new] = fnSimulate(x,u_k,Horizon,dt,sigma, dynamics_actual, 2);
+    [x_new] = fnSimulate(x,u_k,Horizon,dt,sigma, dynamics, 2);
     x = x_new(:,2);
     x_traj = [x_traj x];
     if i ~= 1
