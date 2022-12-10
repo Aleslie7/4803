@@ -28,7 +28,6 @@ dynamics_nominal = fnDynamics();
 dynamics_sigma = 0;
 
 
-%dynamics_actual = fnDynamics(mc_noisy, mp_noisy, l_noisy, g_noisy);
 dynamics_actual = fnDynamics();
 
 % Solver parameters.
@@ -43,13 +42,7 @@ Q_f(2,2)=100;
 Q_f(3,3)=150;
 
 
-if ~(all(eig(Q_f) >= 0))
-    error('Cost matrix Q_f not positive semi-definite.')
-end
-
 R = diag([0.001 0.001 0.001 0.001]);
-
-% Initialize solution.
 
 % Initial configuration:
 xo = [-3; -3; -1; 0; 0; 0; 0; 0; 0; 0; 0; 0];
@@ -76,10 +69,8 @@ p_target(9,1) = 0;
 p_target(10,1) = 0;
 p_target(11,1) = 0;
 p_target(12,1) = 0;
-% Add noise.
-sigma_nominal = 0.0;
-sigma_real = 0.0;
 
+sigma = 0.0;
 % Learning Rate
 gamma = 0.25;
 
@@ -97,7 +88,7 @@ while 1
       0, x_dim, u_dim, u_init, dynamics_nominal,Q);
     u_init = u_k;
     Cost = [Cost cost];
-    [x_new] = fnSimulate(x,u_k,Horizon,dt,sigma_real, dynamics_actual, 2);
+    [x_new] = fnSimulate(x,u_k,Horizon,dt,sigma, dynamics_actual, 2);
     x = x_new(:,2);
     x_traj = [x_traj x];
     if i ~= 1
